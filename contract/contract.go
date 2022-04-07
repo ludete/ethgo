@@ -52,6 +52,7 @@ func (j *jsonRPCNodeProvider) Txn(addr ethgo.Address, key ethgo.Key, input []byt
 			return nil, err
 		}
 	}
+	if opts.MaxPriorityFeePerGas
 	// estimate gas limit
 	if opts.GasLimit == 0 {
 		msg := &ethgo.CallMsg{
@@ -121,7 +122,10 @@ func (j *jsonrpcTransaction) EstimatedGas() uint64 {
 }
 
 func (j *jsonrpcTransaction) GasPrice() uint64 {
-	return j.txn.GasPrice
+	if j.txn.GasPrice > 0 {
+		return j.txn.GasPrice
+	}
+	return big.NewInt(0).Add(j.txn.MaxPriorityFeePerGas, j.txn.MaxFeePerGas).Uint64()
 }
 
 func (j *jsonrpcTransaction) Do() error {
@@ -241,9 +245,11 @@ func (a *Contract) GetABI() *abi.ABI {
 }
 
 type TxnOpts struct {
-	Value    *big.Int
-	GasPrice uint64
-	GasLimit uint64
+	Value                *big.Int
+	GasPrice             uint64
+	GasLimit             uint64
+	MaxFeePerGas         *big.Int
+	MaxPriorityFeePerGas *big.Int
 }
 
 func (a *Contract) Txn(method string, args ...interface{}) (Txn, error) {
