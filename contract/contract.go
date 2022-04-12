@@ -11,6 +11,11 @@ import (
 	"github.com/umbracle/ethgo/wallet"
 )
 
+var (
+	ZEROINT   = big.NewInt(0)
+	ZEROFLOAT = big.NewFloat(0)
+)
+
 // Provider handles the interactions with the Ethereum 1x node
 type Provider interface {
 	Call(ethgo.Address, []byte, *CallOpts) ([]byte, error)
@@ -46,13 +51,12 @@ func (j *jsonRPCNodeProvider) Txn(addr ethgo.Address, key ethgo.Key, input []byt
 	from := key.Address()
 
 	// estimate gas price
-	if opts.GasPrice == 0 {
+	if opts.GasPrice == 0 && opts.MaxPriorityFeePerGas.Cmp(ZEROINT) == 0 {
 		opts.GasPrice, err = j.client.GasPrice()
 		if err != nil {
 			return nil, err
 		}
 	}
-	if opts.MaxPriorityFeePerGas
 	// estimate gas limit
 	if opts.GasLimit == 0 {
 		msg := &ethgo.CallMsg{
@@ -78,11 +82,13 @@ func (j *jsonRPCNodeProvider) Txn(addr ethgo.Address, key ethgo.Key, input []byt
 
 	// send transaction
 	rawTxn := &ethgo.Transaction{
-		From:     from,
-		Input:    input,
-		GasPrice: opts.GasPrice,
-		Gas:      opts.GasLimit,
-		Value:    opts.Value,
+		From:                 from,
+		Input:                input,
+		GasPrice:             opts.GasPrice,
+		Gas:                  opts.GasLimit,
+		Value:                opts.Value,
+		MaxFeePerGas:         opts.MaxFeePerGas,
+		MaxPriorityFeePerGas: opts.MaxPriorityFeePerGas,
 	}
 	if addr != ethgo.ZeroAddress {
 		rawTxn.To = &addr
