@@ -22,11 +22,11 @@ type Provider interface {
 	Txn(ethgo.Address, ethgo.Key, []byte, *TxnOpts) (Txn, error)
 }
 
-type jsonRPCNodeProvider struct {
+type JonRPCNodeProvider struct {
 	client *jsonrpc.Eth
 }
 
-func (j *jsonRPCNodeProvider) Call(addr ethgo.Address, input []byte, opts *CallOpts) ([]byte, error) {
+func (j *JonRPCNodeProvider) Call(addr ethgo.Address, input []byte, opts *CallOpts) ([]byte, error) {
 	msg := &ethgo.CallMsg{
 		To:   &addr,
 		Data: input,
@@ -45,7 +45,7 @@ func (j *jsonRPCNodeProvider) Call(addr ethgo.Address, input []byte, opts *CallO
 	return raw, nil
 }
 
-func (j *jsonRPCNodeProvider) Txn(addr ethgo.Address, key ethgo.Key, input []byte, opts *TxnOpts) (Txn, error) {
+func (j *JonRPCNodeProvider) Txn(addr ethgo.Address, key ethgo.Key, input []byte, opts *TxnOpts) (Txn, error) {
 	var err error
 
 	from := key.Address()
@@ -223,10 +223,10 @@ func NewContract(addr ethgo.Address, abi *abi.ABI, opts ...ContractOption) *Cont
 	if opt.Provider != nil {
 		provider = opt.Provider
 	} else if opt.JsonRPCClient != nil {
-		provider = &jsonRPCNodeProvider{client: opt.JsonRPCClient}
+		provider = &JonRPCNodeProvider{client: opt.JsonRPCClient}
 	} else {
 		client, _ := jsonrpc.NewClient(opt.JsonRPCEndpoint)
-		provider = &jsonRPCNodeProvider{client: client.Eth()}
+		provider = &JonRPCNodeProvider{client: client.Eth()}
 	}
 
 	a := &Contract{
