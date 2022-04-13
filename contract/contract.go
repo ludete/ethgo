@@ -26,6 +26,10 @@ type JonRPCNodeProvider struct {
 	client *jsonrpc.Eth
 }
 
+func NewJonRPCNodeProvider(client *jsonrpc.Eth) Provider {
+	return &JonRPCNodeProvider{client: client}
+}
+
 func (j *JonRPCNodeProvider) Call(addr ethgo.Address, input []byte, opts *CallOpts) ([]byte, error) {
 	msg := &ethgo.CallMsg{
 		To:   &addr,
