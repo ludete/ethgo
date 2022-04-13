@@ -50,15 +50,15 @@ func (t *Testdata) CallBasicInput(block ...ethgo.BlockNumber) (retval0 *big.Int,
 		err = fmt.Errorf("failed to encode output at index 1")
 		return
 	}
-	
+
 	return
 }
 
 // txns
 
 // TxnBasicInput sends a txnBasicInput transaction in the solidity contract
-func (t *Testdata) TxnBasicInput(val1 ethgo.Address, val2 *big.Int) (contract.Txn, error) {
-	return t.c.Txn("txnBasicInput", val1, val2)
+func (t *Testdata) TxnBasicInput(val1 ethgo.Address, val2 *big.Int, opts *contract.TxnOpts) (contract.Txn, error) {
+	return t.c.Txn("txnBasicInput", val1, val2, opts)
 }
 
 // events

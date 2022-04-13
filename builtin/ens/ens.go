@@ -24,7 +24,8 @@ type ENS struct {
 
 // DeployENS deploys a new ENS contract
 func DeployENS(provider *jsonrpc.Client, from ethgo.Address, args []interface{}, opts ...contract.ContractOption) (contract.Txn, error) {
-	return contract.DeployContract(abiENS, binENS, args, opts...)
+	//todo. will fix nil param with txopts.
+	return contract.DeployContract(abiENS, binENS, args, nil, opts...)
 }
 
 // NewENS creates a new instance of the contract at a specific address
@@ -50,7 +51,7 @@ func (e *ENS) Owner(node [32]byte, block ...ethgo.BlockNumber) (retval0 ethgo.Ad
 		err = fmt.Errorf("failed to encode output at index 0")
 		return
 	}
-	
+
 	return
 }
 
@@ -70,7 +71,7 @@ func (e *ENS) Resolver(node [32]byte, block ...ethgo.BlockNumber) (retval0 ethgo
 		err = fmt.Errorf("failed to encode output at index 0")
 		return
 	}
-	
+
 	return
 }
 
@@ -90,30 +91,30 @@ func (e *ENS) Ttl(node [32]byte, block ...ethgo.BlockNumber) (retval0 uint64, er
 		err = fmt.Errorf("failed to encode output at index 0")
 		return
 	}
-	
+
 	return
 }
 
 // txns
 
 // SetOwner sends a setOwner transaction in the solidity contract
-func (e *ENS) SetOwner(node [32]byte, owner ethgo.Address) (contract.Txn, error) {
-	return e.c.Txn("setOwner", node, owner)
+func (e *ENS) SetOwner(node [32]byte, owner ethgo.Address, opts *contract.TxnOpts) (contract.Txn, error) {
+	return e.c.Txn("setOwner", node, owner, opts)
 }
 
 // SetResolver sends a setResolver transaction in the solidity contract
-func (e *ENS) SetResolver(node [32]byte, resolver ethgo.Address) (contract.Txn, error) {
-	return e.c.Txn("setResolver", node, resolver)
+func (e *ENS) SetResolver(node [32]byte, resolver ethgo.Address, opts *contract.TxnOpts) (contract.Txn, error) {
+	return e.c.Txn("setResolver", node, resolver, opts)
 }
 
 // SetSubnodeOwner sends a setSubnodeOwner transaction in the solidity contract
-func (e *ENS) SetSubnodeOwner(node [32]byte, label [32]byte, owner ethgo.Address) (contract.Txn, error) {
-	return e.c.Txn("setSubnodeOwner", node, label, owner)
+func (e *ENS) SetSubnodeOwner(node [32]byte, label [32]byte, owner ethgo.Address, opts *contract.TxnOpts) (contract.Txn, error) {
+	return e.c.Txn("setSubnodeOwner", node, label, owner, opts)
 }
 
 // SetTTL sends a setTTL transaction in the solidity contract
-func (e *ENS) SetTTL(node [32]byte, ttl uint64) (contract.Txn, error) {
-	return e.c.Txn("setTTL", node, ttl)
+func (e *ENS) SetTTL(node [32]byte, ttl uint64, opts *contract.TxnOpts) (contract.Txn, error) {
+	return e.c.Txn("setTTL", node, ttl, opts)
 }
 
 // events

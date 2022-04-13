@@ -24,7 +24,8 @@ type Resolver struct {
 
 // DeployResolver deploys a new Resolver contract
 func DeployResolver(provider *jsonrpc.Client, from ethgo.Address, args []interface{}, opts ...contract.ContractOption) (contract.Txn, error) {
-	return contract.DeployContract(abiResolver, binResolver, args, opts...)
+	//todo. will fix nil param.
+	return contract.DeployContract(abiResolver, binResolver, args, nil, opts...)
 }
 
 // NewResolver creates a new instance of the contract at a specific address
@@ -55,7 +56,7 @@ func (r *Resolver) ABI(node [32]byte, contentTypes *big.Int, block ...ethgo.Bloc
 		err = fmt.Errorf("failed to encode output at index 1")
 		return
 	}
-	
+
 	return
 }
 
@@ -75,7 +76,7 @@ func (r *Resolver) Addr(node [32]byte, block ...ethgo.BlockNumber) (retval0 ethg
 		err = fmt.Errorf("failed to encode output at index 0")
 		return
 	}
-	
+
 	return
 }
 
@@ -95,7 +96,7 @@ func (r *Resolver) Content(node [32]byte, block ...ethgo.BlockNumber) (retval0 [
 		err = fmt.Errorf("failed to encode output at index 0")
 		return
 	}
-	
+
 	return
 }
 
@@ -115,7 +116,7 @@ func (r *Resolver) Name(node [32]byte, block ...ethgo.BlockNumber) (retval0 stri
 		err = fmt.Errorf("failed to encode output at index 0")
 		return
 	}
-	
+
 	return
 }
 
@@ -140,7 +141,7 @@ func (r *Resolver) Pubkey(node [32]byte, block ...ethgo.BlockNumber) (retval0 [3
 		err = fmt.Errorf("failed to encode output at index 1")
 		return
 	}
-	
+
 	return
 }
 
@@ -160,35 +161,35 @@ func (r *Resolver) SupportsInterface(interfaceID [4]byte, block ...ethgo.BlockNu
 		err = fmt.Errorf("failed to encode output at index 0")
 		return
 	}
-	
+
 	return
 }
 
 // txns
 
 // SetABI sends a setABI transaction in the solidity contract
-func (r *Resolver) SetABI(node [32]byte, contentType *big.Int, data []byte) (contract.Txn, error) {
-	return r.c.Txn("setABI", node, contentType, data)
+func (r *Resolver) SetABI(node [32]byte, contentType *big.Int, data []byte, opts *contract.TxnOpts) (contract.Txn, error) {
+	return r.c.Txn("setABI", node, contentType, data, opts)
 }
 
 // SetAddr sends a setAddr transaction in the solidity contract
-func (r *Resolver) SetAddr(node [32]byte, addr ethgo.Address) (contract.Txn, error) {
-	return r.c.Txn("setAddr", node, addr)
+func (r *Resolver) SetAddr(node [32]byte, addr ethgo.Address, opts *contract.TxnOpts) (contract.Txn, error) {
+	return r.c.Txn("setAddr", node, addr, opts)
 }
 
 // SetContent sends a setContent transaction in the solidity contract
-func (r *Resolver) SetContent(node [32]byte, hash [32]byte) (contract.Txn, error) {
-	return r.c.Txn("setContent", node, hash)
+func (r *Resolver) SetContent(node [32]byte, hash [32]byte, opts *contract.TxnOpts) (contract.Txn, error) {
+	return r.c.Txn("setContent", node, hash, opts)
 }
 
 // SetName sends a setName transaction in the solidity contract
-func (r *Resolver) SetName(node [32]byte, name string) (contract.Txn, error) {
-	return r.c.Txn("setName", node, name)
+func (r *Resolver) SetName(node [32]byte, name string, opts *contract.TxnOpts) (contract.Txn, error) {
+	return r.c.Txn("setName", node, name, opts)
 }
 
 // SetPubkey sends a setPubkey transaction in the solidity contract
-func (r *Resolver) SetPubkey(node [32]byte, x [32]byte, y [32]byte) (contract.Txn, error) {
-	return r.c.Txn("setPubkey", node, x, y)
+func (r *Resolver) SetPubkey(node [32]byte, x [32]byte, y [32]byte, opts *contract.TxnOpts) (contract.Txn, error) {
+	return r.c.Txn("setPubkey", node, x, y, opts)
 }
 
 // events

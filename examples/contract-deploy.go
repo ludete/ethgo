@@ -14,7 +14,7 @@ func contractDeploy() {
 	// bytecode of the contract
 	bin := []byte{}
 
-	txn, err := contract.DeployContract(abiContract, bin, []interface{}{})
+	txn, err := contract.DeployContract(abiContract, bin, []interface{}{}, nil)
 	handleErr(err)
 
 	err = txn.Do()

@@ -45,7 +45,7 @@ func (e *ERC20) Allowance(owner ethgo.Address, spender ethgo.Address, block ...e
 		err = fmt.Errorf("failed to encode output at index 0")
 		return
 	}
-	
+
 	return
 }
 
@@ -65,7 +65,7 @@ func (e *ERC20) BalanceOf(owner ethgo.Address, block ...ethgo.BlockNumber) (retv
 		err = fmt.Errorf("failed to encode output at index 0")
 		return
 	}
-	
+
 	return
 }
 
@@ -85,7 +85,7 @@ func (e *ERC20) Decimals(block ...ethgo.BlockNumber) (retval0 uint8, err error) 
 		err = fmt.Errorf("failed to encode output at index 0")
 		return
 	}
-	
+
 	return
 }
 
@@ -105,7 +105,7 @@ func (e *ERC20) Name(block ...ethgo.BlockNumber) (retval0 string, err error) {
 		err = fmt.Errorf("failed to encode output at index 0")
 		return
 	}
-	
+
 	return
 }
 
@@ -125,7 +125,7 @@ func (e *ERC20) Symbol(block ...ethgo.BlockNumber) (retval0 string, err error) {
 		err = fmt.Errorf("failed to encode output at index 0")
 		return
 	}
-	
+
 	return
 }
 
@@ -145,25 +145,25 @@ func (e *ERC20) TotalSupply(block ...ethgo.BlockNumber) (retval0 *big.Int, err e
 		err = fmt.Errorf("failed to encode output at index 0")
 		return
 	}
-	
+
 	return
 }
 
 // txns
 
 // Approve sends a approve transaction in the solidity contract
-func (e *ERC20) Approve(spender ethgo.Address, value *big.Int) (contract.Txn, error) {
-	return e.c.Txn("approve", spender, value)
+func (e *ERC20) Approve(spender ethgo.Address, value *big.Int, opts *contract.TxnOpts) (contract.Txn, error) {
+	return e.c.Txn("approve", spender, value, opts)
 }
 
 // Transfer sends a transfer transaction in the solidity contract
-func (e *ERC20) Transfer(to ethgo.Address, value *big.Int) (contract.Txn, error) {
-	return e.c.Txn("transfer", to, value)
+func (e *ERC20) Transfer(to ethgo.Address, value *big.Int, opts *contract.TxnOpts) (contract.Txn, error) {
+	return e.c.Txn("transfer", to, value, opts)
 }
 
 // TransferFrom sends a transferFrom transaction in the solidity contract
-func (e *ERC20) TransferFrom(from ethgo.Address, to ethgo.Address, value *big.Int) (contract.Txn, error) {
-	return e.c.Txn("transferFrom", from, to, value)
+func (e *ERC20) TransferFrom(from ethgo.Address, to ethgo.Address, value *big.Int, opts *contract.TxnOpts) (contract.Txn, error) {
+	return e.c.Txn("transferFrom", from, to, value, opts)
 }
 
 // events

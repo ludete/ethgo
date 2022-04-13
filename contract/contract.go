@@ -86,6 +86,7 @@ func (j *jsonRPCNodeProvider) Txn(addr ethgo.Address, key ethgo.Key, input []byt
 		Input:                input,
 		GasPrice:             opts.GasPrice,
 		Gas:                  opts.GasLimit,
+		Nonce:                opts.Nonce,
 		Value:                opts.Value,
 		MaxFeePerGas:         opts.MaxFeePerGas,
 		MaxPriorityFeePerGas: opts.MaxPriorityFeePerGas,
@@ -203,10 +204,11 @@ func WithSender(sender ethgo.Key) ContractOption {
 	}
 }
 
-func DeployContract(abi *abi.ABI, bin []byte, args []interface{}, opts ...ContractOption) (Txn, error) {
+func DeployContract(abi *abi.ABI, bin []byte, args []interface{}, txOpts *TxnOpts, opts ...ContractOption) (Txn, error) {
 	a := NewContract(ethgo.Address{}, abi, opts...)
 	a.bin = bin
-	return a.Txn("constructor", args...)
+
+	return a.Txn("constructor", append(args, txOpts))
 }
 
 func NewContract(addr ethgo.Address, abi *abi.ABI, opts ...ContractOption) *Contract {
@@ -254,6 +256,7 @@ type TxnOpts struct {
 	Value                *big.Int
 	GasPrice             uint64
 	GasLimit             uint64
+	Nonce                uint64
 	MaxFeePerGas         *big.Int
 	MaxPriorityFeePerGas *big.Int
 }
@@ -262,7 +265,7 @@ func (a *Contract) Txn(method string, args ...interface{}) (Txn, error) {
 	if a.key == nil {
 		return nil, fmt.Errorf("no key selected")
 	}
-
+	length := len(args)
 	isContractDeployment := method == "constructor"
 
 	var input []byte
@@ -281,7 +284,7 @@ func (a *Contract) Txn(method string, args ...interface{}) (Txn, error) {
 		}
 	}
 	if abiMethod != nil {
-		data, err := abi.Encode(args, abiMethod.Inputs)
+		data, err := abi.Encode(args[:length-1], abiMethod.Inputs)
 		if err != nil {
 			return nil, fmt.Errorf("failed to encode arguments: %v", err)
 		}
@@ -291,8 +294,8 @@ func (a *Contract) Txn(method string, args ...interface{}) (Txn, error) {
 			input = append(abiMethod.ID(), data...)
 		}
 	}
-
-	txn, err := a.provider.Txn(a.addr, a.key, input, &TxnOpts{})
+	txCfg := args[length-1].(*TxnOpts)
+	txn, err := a.provider.Txn(a.addr, a.key, input, txCfg)
 	if err != nil {
 		return nil, err
 	}
