@@ -8,14 +8,13 @@ import (
 	"github.com/umbracle/ethgo"
 	"github.com/umbracle/ethgo/jsonrpc"
 	"github.com/umbracle/ethgo/testutil"
-	"github.com/umbracle/ethgo/wallet"
 )
 
 func TestSendSignedTransaction(t *testing.T) {
 	s := testutil.NewTestServer(t, nil)
 	defer s.Close()
 
-	key, err := wallet.GenerateKey()
+	//key, err := wallet.GenerateKey()
 	assert.NoError(t, err)
 
 	// add value to the new key
@@ -51,7 +50,7 @@ func TestSendSignedTransaction(t *testing.T) {
 		txn.Gas = limit
 	}
 
-	signer := wallet.NewEIP155Signer(chainID.Uint64())
+	//signer := wallet.NewEIP155Signer(chainID.Uint64())
 	txn, err = signer.SignTx(txn, key)
 	assert.NoError(t, err)
 

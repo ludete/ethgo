@@ -7,7 +7,6 @@ import (
 	"github.com/umbracle/ethgo/abi"
 	"github.com/umbracle/ethgo/contract"
 	"github.com/umbracle/ethgo/jsonrpc"
-	"github.com/umbracle/ethgo/wallet"
 )
 
 func contractTransaction() {
@@ -25,12 +24,12 @@ func contractTransaction() {
 	handleErr(err)
 
 	// wallet signer
-	key, err := wallet.GenerateKey()
-	handleErr(err)
+	//key, err := wallet.GenerateKey()
+	//handleErr(err)
 
 	opts := []contract.ContractOption{
 		contract.WithJsonRPC(client.Eth()),
-		contract.WithSender(key),
+		contract.WithSender(nil),
 	}
 	c := contract.NewContract(addr, abiContract, opts...)
 	txn, err := c.Txn("transferFrom", ethgo.Latest)

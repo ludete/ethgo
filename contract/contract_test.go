@@ -10,7 +10,6 @@ import (
 	"github.com/umbracle/ethgo/abi"
 	"github.com/umbracle/ethgo/jsonrpc"
 	"github.com/umbracle/ethgo/testutil"
-	"github.com/umbracle/ethgo/wallet"
 )
 
 var (
@@ -98,7 +97,7 @@ func TestContract_Deploy(t *testing.T) {
 	defer s.Close()
 
 	// create an address and fund it
-	key, _ := wallet.GenerateKey()
+	//key, _ := wallet.GenerateKey()
 	s.Transfer(key.Address(), big.NewInt(1000000000000000000))
 
 	p, _ := jsonrpc.NewClient(s.HTTPAddr())
@@ -137,7 +136,7 @@ func TestContract_Transaction(t *testing.T) {
 	defer s.Close()
 
 	// create an address and fund it
-	key, _ := wallet.GenerateKey()
+	//key, _ := wallet.GenerateKey()
 	s.Transfer(key.Address(), big.NewInt(1000000000000000000))
 
 	cc := &testutil.Contract{}

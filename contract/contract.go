@@ -1,33 +1,42 @@
 package contract
 
 import (
+	"crypto/ecdsa"
 	"encoding/hex"
 	"fmt"
 	"math/big"
+	"time"
+
+	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/umbracle/ethgo"
 	"github.com/umbracle/ethgo/abi"
 	"github.com/umbracle/ethgo/jsonrpc"
-	"github.com/umbracle/ethgo/wallet"
-)
 
-var (
-	ZEROINT   = big.NewInt(0)
-	ZEROFLOAT = big.NewFloat(0)
+	//"github.com/umbracle/ethgo/wallet"
+	eTypes "github.com/ethereum/go-ethereum/core/types"
 )
 
 // Provider handles the interactions with the Ethereum 1x node
 type Provider interface {
 	Call(ethgo.Address, []byte, *CallOpts) ([]byte, error)
-	Txn(ethgo.Address, ethgo.Key, []byte, *TxnOpts) (Txn, error)
+	SendEIP1559Tx(to common.Address, nonce uint64,
+		key *ecdsa.PrivateKey, input []byte, opts *TxnOpts) (ethgo.Hash, error)
+	Wait(txHash ethgo.Hash) (*ethgo.Receipt, error)
 }
 
 type JonRPCNodeProvider struct {
-	client *jsonrpc.Eth
+	chainId       *big.Int
+	client        *jsonrpc.Eth
+	queryInterval time.Duration
 }
 
-func NewJonRPCNodeProvider(client *jsonrpc.Eth) Provider {
-	return &JonRPCNodeProvider{client: client}
+func NewJonRPCNodeProvider(client *jsonrpc.Eth, chainId int64) *JonRPCNodeProvider {
+	return &JonRPCNodeProvider{
+		client:        client,
+		chainId:       big.NewInt(chainId),
+		queryInterval: time.Millisecond,
+	}
 }
 
 func (j *JonRPCNodeProvider) Call(addr ethgo.Address, input []byte, opts *CallOpts) ([]byte, error) {
@@ -49,112 +58,41 @@ func (j *JonRPCNodeProvider) Call(addr ethgo.Address, input []byte, opts *CallOp
 	return raw, nil
 }
 
-func (j *JonRPCNodeProvider) Txn(addr ethgo.Address, key ethgo.Key, input []byte, opts *TxnOpts) (Txn, error) {
-	var err error
+func (j *JonRPCNodeProvider) SendEIP1559Tx(to common.Address,
+	nonce uint64, key *ecdsa.PrivateKey, input []byte, opts *TxnOpts) (ethgo.Hash, error) {
 
-	from := key.Address()
-
-	// estimate gas price
-	if opts.GasPrice == 0 && opts.MaxPriorityFeePerGas.Cmp(ZEROINT) == 0 {
-		opts.GasPrice, err = j.client.GasPrice()
-		if err != nil {
-			return nil, err
-		}
+	var (
+		err  error
+		hash ethgo.Hash
+	)
+	dynamicFeeTx := &eTypes.DynamicFeeTx{
+		Nonce:     nonce,
+		GasTipCap: opts.MaxPriorityFeePerGas,
+		GasFeeCap: opts.MaxFeePerGas,
+		Gas:       opts.GasLimit,
+		To:        &to,
+		Value:     opts.Value,
+		Data:      input,
 	}
-	// estimate gas limit
-	if opts.GasLimit == 0 {
-		msg := &ethgo.CallMsg{
-			From:     from,
-			To:       nil,
-			Data:     input,
-			Value:    opts.Value,
-			GasPrice: opts.GasPrice,
-		}
-		if addr != ethgo.ZeroAddress {
-			msg.To = &addr
-		}
-		opts.GasLimit, err = j.client.EstimateGas(msg)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	chainID, err := j.client.ChainID()
+	signedTx, err := eTypes.SignNewTx(key, eTypes.LatestSignerForChainID(j.chainId), dynamicFeeTx)
 	if err != nil {
-		return nil, err
+		return hash, err
 	}
-
-	// send transaction
-	rawTxn := &ethgo.Transaction{
-		From:                 from,
-		Input:                input,
-		GasPrice:             opts.GasPrice,
-		Gas:                  opts.GasLimit,
-		Nonce:                opts.Nonce,
-		Value:                opts.Value,
-		MaxFeePerGas:         opts.MaxFeePerGas,
-		MaxPriorityFeePerGas: opts.MaxPriorityFeePerGas,
-	}
-	if addr != ethgo.ZeroAddress {
-		rawTxn.To = &addr
-	}
-
-	signer := wallet.NewEIP155Signer(chainID.Uint64())
-	signedTxn, err := signer.SignTx(rawTxn, key)
+	txData, err := signedTx.MarshalBinary()
 	if err != nil {
-		return nil, err
+		return hash, err
 	}
-	txnRaw, err := signedTxn.MarshalRLPTo(nil)
-	if err != nil {
-		return nil, err
-	}
-
-	txn := &jsonrpcTransaction{
-		txn:    signedTxn,
-		txnRaw: txnRaw,
-		client: j.client,
-	}
-	return txn, nil
+	hash, err = j.client.SendRawTransaction(txData)
+	return hash, err
 }
 
-type jsonrpcTransaction struct {
-	hash   ethgo.Hash
-	client *jsonrpc.Eth
-	txn    *ethgo.Transaction
-	txnRaw []byte
-}
-
-func (j *jsonrpcTransaction) Hash() ethgo.Hash {
-	return j.hash
-}
-
-func (j *jsonrpcTransaction) EstimatedGas() uint64 {
-	return j.txn.Gas
-}
-
-func (j *jsonrpcTransaction) GasPrice() uint64 {
-	if j.txn.GasPrice > 0 {
-		return j.txn.GasPrice
-	}
-	return big.NewInt(0).Add(j.txn.MaxPriorityFeePerGas, j.txn.MaxFeePerGas).Uint64()
-}
-
-func (j *jsonrpcTransaction) Do() error {
-	hash, err := j.client.SendRawTransaction(j.txnRaw)
-	if err != nil {
-		return err
-	}
-	j.hash = hash
-	return nil
-}
-
-func (j *jsonrpcTransaction) Wait() (*ethgo.Receipt, error) {
-	if (j.hash == ethgo.Hash{}) {
-		panic("transaction not executed")
+func (j *JonRPCNodeProvider) Wait(txHash ethgo.Hash) (*ethgo.Receipt, error) {
+	if (txHash == ethgo.Hash{}) {
+		return nil, nil
 	}
 
 	for {
-		receipt, err := j.client.GetTransactionReceipt(j.hash)
+		receipt, err := j.client.GetTransactionReceipt(txHash)
 		if err != nil {
 			if err.Error() != "not found" {
 				return nil, err
@@ -163,16 +101,8 @@ func (j *jsonrpcTransaction) Wait() (*ethgo.Receipt, error) {
 		if receipt != nil {
 			return receipt, nil
 		}
+		time.Sleep(j.queryInterval)
 	}
-}
-
-// Txn is the transaction object returned
-type Txn interface {
-	Hash() ethgo.Hash
-	EstimatedGas() uint64
-	GasPrice() uint64
-	Do() error
-	Wait() (*ethgo.Receipt, error)
 }
 
 type Opts struct {
