@@ -3,15 +3,16 @@ package erc20
 import (
 	"testing"
 
+	"github.com/ethereum/go-ethereum/common"
+
 	"github.com/stretchr/testify/assert"
-	"github.com/umbracle/ethgo"
 	"github.com/umbracle/ethgo/contract"
 	"github.com/umbracle/ethgo/jsonrpc"
 	"github.com/umbracle/ethgo/testutil"
 )
 
 var (
-	zeroX = ethgo.HexToAddress("0xe41d2489571d322189246dafa5ebde1f4699f498")
+	zeroX = common.HexToAddress("0xe41d2489571d322189246dafa5ebde1f4699f498")
 )
 
 func TestERC20Decimals(t *testing.T) {

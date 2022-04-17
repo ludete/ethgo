@@ -6,6 +6,8 @@ import (
 	"math/big"
 	"strconv"
 	"strings"
+
+	"github.com/ethereum/go-ethereum/common"
 )
 
 var (
@@ -17,24 +19,17 @@ var (
 )
 
 // Address is an Ethereum address
-type Address [20]byte
+type Address common.Address
 
 // HexToAddress converts an hex string value to an address object
 func HexToAddress(str string) Address {
-	a := Address{}
-	a.UnmarshalText(completeHex(str, 20))
+	a := Address(common.HexToAddress(str))
 	return a
 }
 
 // BytesToAddress converts bytes to an address object
 func BytesToAddress(b []byte) Address {
-	var a Address
-
-	size := len(b)
-	min := min(size, 20)
-
-	copy(a[20-min:], b[len(b)-min:])
-	return a
+	return Address(common.BytesToAddress(b))
 }
 
 // Address implements the ethgo.Key interface Address method.
@@ -236,7 +231,7 @@ type AccessList []AccessEntry
 
 type CallMsg struct {
 	From     Address
-	To       *Address
+	To       *common.Address
 	Data     []byte
 	GasPrice uint64
 	Gas      *big.Int

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/ethereum/go-ethereum/common"
+
 	"github.com/umbracle/ethgo"
 	"github.com/umbracle/ethgo/abi"
 	"github.com/umbracle/ethgo/contract"
@@ -26,7 +28,7 @@ func contractCall() {
 	handleErr(err)
 
 	// Matic token
-	addr := ethgo.HexToAddress("0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0")
+	addr := common.HexToAddress("0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0")
 
 	client, err := jsonrpc.NewClient("https://mainnet.infura.io")
 	handleErr(err)

@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/umbracle/ethgo"
+	"github.com/ethereum/go-ethereum/common"
 )
 
 var (
@@ -190,7 +190,7 @@ func encodeAddress(v reflect.Value) ([]byte, error) {
 		v = convertArrayToBytes(v)
 	}
 	if v.Kind() == reflect.String {
-		var addr ethgo.Address
+		var addr common.Address
 		if err := addr.UnmarshalText([]byte(v.String())); err != nil {
 			return nil, err
 		}

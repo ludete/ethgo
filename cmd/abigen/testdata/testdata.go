@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/ethereum/go-ethereum/common"
+
 	"github.com/umbracle/ethgo"
 	"github.com/umbracle/ethgo/contract"
 	"github.com/umbracle/ethgo/jsonrpc"
@@ -23,7 +25,7 @@ type Testdata struct {
 }
 
 // NewTestdata creates a new instance of the contract at a specific address
-func NewTestdata(addr ethgo.Address, opts ...contract.ContractOption) *Testdata {
+func NewTestdata(addr common.Address, opts ...contract.ContractOption) *Testdata {
 	return &Testdata{c: contract.NewContract(addr, abiTestdata, opts...)}
 }
 
@@ -57,7 +59,7 @@ func (t *Testdata) CallBasicInput(block ...ethgo.BlockNumber) (retval0 *big.Int,
 // txns
 
 // TxnBasicInput sends a txnBasicInput transaction in the solidity contract
-func (t *Testdata) TxnBasicInput(val1 ethgo.Address, val2 *big.Int, opts *contract.TxnOpts) (contract.Txn, error) {
+func (t *Testdata) TxnBasicInput(val1 ethgo.Address, val2 *big.Int, opts *contract.TxnOpts) (ethgo.Hash, error) {
 	return t.c.Txn("txnBasicInput", val1, val2, opts)
 }
 

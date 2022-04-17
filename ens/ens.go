@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/umbracle/ethgo"
+	"github.com/ethereum/go-ethereum/common"
+
 	"github.com/umbracle/ethgo/builtin/ens"
 	"github.com/umbracle/ethgo/jsonrpc"
 )
@@ -13,12 +14,12 @@ type EnsConfig struct {
 	Logger   *log.Logger
 	Client   *jsonrpc.Client
 	Addr     string
-	Resolver ethgo.Address
+	Resolver common.Address
 }
 
 type EnsOption func(*EnsConfig)
 
-func WithResolver(resolver ethgo.Address) EnsOption {
+func WithResolver(resolver common.Address) EnsOption {
 	return func(c *EnsConfig) {
 		c.Resolver = resolver
 	}
@@ -64,7 +65,8 @@ func NewENS(opts ...EnsOption) (*ENS, error) {
 		config.Client = client
 	}
 
-	if config.Resolver == ethgo.ZeroAddress {
+	zero := common.Address{}
+	if config.Resolver == zero {
 		// try to get the resolver address from the builtin list
 		chainID, err := config.Client.Eth().ChainID()
 		if err != nil {
@@ -82,7 +84,7 @@ func NewENS(opts ...EnsOption) (*ENS, error) {
 	return ens, nil
 }
 
-func (e *ENS) Resolve(name string) (ethgo.Address, error) {
+func (e *ENS) Resolve(name string) (common.Address, error) {
 	resolver := ens.NewENSResolver(e.config.Resolver, e.config.Client)
 	return resolver.Resolve(name)
 }

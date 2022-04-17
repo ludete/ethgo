@@ -1,6 +1,7 @@
 package ens
 
 import (
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/umbracle/ethgo"
 	"github.com/umbracle/ethgo/contract"
 	"github.com/umbracle/ethgo/jsonrpc"
@@ -11,11 +12,11 @@ type ENSResolver struct {
 	provider *jsonrpc.Eth
 }
 
-func NewENSResolver(addr ethgo.Address, provider *jsonrpc.Client) *ENSResolver {
+func NewENSResolver(addr common.Address, provider *jsonrpc.Client) *ENSResolver {
 	return &ENSResolver{NewENS(addr, contract.WithJsonRPC(provider.Eth())), provider.Eth()}
 }
 
-func (e *ENSResolver) Resolve(addr string, block ...ethgo.BlockNumber) (res ethgo.Address, err error) {
+func (e *ENSResolver) Resolve(addr string, block ...ethgo.BlockNumber) (res common.Address, err error) {
 	addrHash := NameHash(addr)
 	resolverAddr, err := e.e.Resolver(addrHash, block...)
 	if err != nil {

@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/ethereum/go-ethereum/common"
+
 	"github.com/umbracle/ethgo"
 	"github.com/umbracle/ethgo/contract"
 	"github.com/umbracle/ethgo/jsonrpc"
@@ -23,7 +25,7 @@ type ERC20 struct {
 }
 
 // NewERC20 creates a new instance of the contract at a specific address
-func NewERC20(addr ethgo.Address, opts ...contract.ContractOption) *ERC20 {
+func NewERC20(addr common.Address, opts ...contract.ContractOption) *ERC20 {
 	return &ERC20{c: contract.NewContract(addr, abiERC20, opts...)}
 }
 
@@ -152,17 +154,17 @@ func (e *ERC20) TotalSupply(block ...ethgo.BlockNumber) (retval0 *big.Int, err e
 // txns
 
 // Approve sends a approve transaction in the solidity contract
-func (e *ERC20) Approve(spender ethgo.Address, value *big.Int, opts *contract.TxnOpts) (contract.Txn, error) {
+func (e *ERC20) Approve(spender ethgo.Address, value *big.Int, opts *contract.TxnOpts) (ethgo.Hash, error) {
 	return e.c.Txn("approve", spender, value, opts)
 }
 
 // Transfer sends a transfer transaction in the solidity contract
-func (e *ERC20) Transfer(to ethgo.Address, value *big.Int, opts *contract.TxnOpts) (contract.Txn, error) {
+func (e *ERC20) Transfer(to ethgo.Address, value *big.Int, opts *contract.TxnOpts) (ethgo.Hash, error) {
 	return e.c.Txn("transfer", to, value, opts)
 }
 
 // TransferFrom sends a transferFrom transaction in the solidity contract
-func (e *ERC20) TransferFrom(from ethgo.Address, to ethgo.Address, value *big.Int, opts *contract.TxnOpts) (contract.Txn, error) {
+func (e *ERC20) TransferFrom(from ethgo.Address, to ethgo.Address, value *big.Int, opts *contract.TxnOpts) (ethgo.Hash, error) {
 	return e.c.Txn("transferFrom", from, to, value, opts)
 }
 

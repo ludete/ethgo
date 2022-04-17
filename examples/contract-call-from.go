@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/ethereum/go-ethereum/common"
+
 	"github.com/umbracle/ethgo"
 	"github.com/umbracle/ethgo/abi"
 	"github.com/umbracle/ethgo/contract"
@@ -20,15 +22,15 @@ func contractCallFrom() {
 	handleErr(err)
 
 	// Matic token
-	addr := ethgo.HexToAddress("0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0")
+	addr := common.HexToAddress("0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0")
 
 	client, err := jsonrpc.NewClient("https://mainnet.infura.io")
 	handleErr(err)
 
 	// from address (msg.sender in solidity)
-	from := ethgo.Address{0x1}
+	//from := common.Address{0x1}
 
-	c := contract.NewContract(addr, abiContract, contract.WithSender(from), contract.WithJsonRPC(client.Eth()))
+	c := contract.NewContract(addr, abiContract, contract.WithSender(nil), contract.WithJsonRPC(client.Eth()))
 	res, err := c.Call("totalSupply", ethgo.Latest)
 	handleErr(err)
 

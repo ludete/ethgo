@@ -3,6 +3,8 @@ package examples
 import (
 	"fmt"
 
+	"github.com/ethereum/go-ethereum/common"
+
 	"github.com/umbracle/ethgo"
 	"github.com/umbracle/ethgo/abi"
 	"github.com/umbracle/ethgo/contract"
@@ -18,7 +20,7 @@ func contractTransaction() {
 	handleErr(err)
 
 	// Matic token
-	addr := ethgo.HexToAddress("0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0")
+	addr := common.HexToAddress("0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0")
 
 	client, err := jsonrpc.NewClient("https://mainnet.infura.io")
 	handleErr(err)
@@ -32,14 +34,8 @@ func contractTransaction() {
 		contract.WithSender(nil),
 	}
 	c := contract.NewContract(addr, abiContract, opts...)
-	txn, err := c.Txn("transferFrom", ethgo.Latest)
+	txHash, err := c.Txn("transferFrom", ethgo.Latest)
 	handleErr(err)
 
-	err = txn.Do()
-	handleErr(err)
-
-	receipt, err := txn.Wait()
-	handleErr(err)
-
-	fmt.Printf("Transaction mined at: %s", receipt.TransactionHash)
+	fmt.Printf("Transaction mined at: %x", txHash)
 }

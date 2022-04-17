@@ -14,14 +14,7 @@ func contractDeploy() {
 	// bytecode of the contract
 	bin := []byte{}
 
-	txn, err := contract.DeployContract(abiContract, bin, []interface{}{}, nil)
+	txHash, err := contract.DeployContract(abiContract, bin, []interface{}{}, nil)
 	handleErr(err)
-
-	err = txn.Do()
-	handleErr(err)
-
-	receipt, err := txn.Wait()
-	handleErr(err)
-
-	fmt.Printf("Contract: %s", receipt.ContractAddress)
+	fmt.Printf("Contract: %s", txHash)
 }
