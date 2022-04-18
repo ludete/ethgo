@@ -14,6 +14,7 @@ import (
 
 // Provider handles the interactions with the Ethereum 1x node
 type Provider interface {
+	Client() *jsonrpc.Eth
 	Call(common.Address, []byte, *CallOpts) ([]byte, error)
 	SendEIP1559Tx(to common.Address,
 		key *ecdsa.PrivateKey, input []byte, opts *TxnOpts) (ethgo.Hash, error)
@@ -32,6 +33,10 @@ func NewJonRPCNodeProvider(client *jsonrpc.Eth, chainId int64) *JonRPCNodeProvid
 		chainId:       big.NewInt(chainId),
 		queryInterval: time.Millisecond,
 	}
+}
+
+func (j *JonRPCNodeProvider) Client() *jsonrpc.Eth {
+	return j.client
 }
 
 func (j *JonRPCNodeProvider) Call(addr common.Address, input []byte, opts *CallOpts) ([]byte, error) {

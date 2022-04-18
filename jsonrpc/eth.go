@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/umbracle/ethgo"
 )
 
@@ -19,6 +21,12 @@ func (c *Client) Eth() *Eth {
 	return c.endpoints.e
 }
 
+type EstimateFee struct {
+	BaseFee              *big.Int
+	MaxFeePerGas         *big.Int
+	MaxPriorityFeePerGas *big.Int
+}
+
 // GetCode returns the code of a contract
 func (e *Eth) GetCode(addr ethgo.Address, block ethgo.BlockNumberOrHash) (string, error) {
 	var res string
@@ -26,6 +34,73 @@ func (e *Eth) GetCode(addr ethgo.Address, block ethgo.BlockNumberOrHash) (string
 		return "", err
 	}
 	return res, nil
+}
+func (e *Eth) EstimateFee() (*EstimateFee, error) {
+	header, err := e.GetBlockByNumber(ethgo.Latest, false)
+	if err != nil {
+		return nil, err
+	}
+	priorityFee, err := e.SuggestGasTipCap()
+	if err != nil {
+		return nil, err
+	}
+	potentialMaxFee := big.NewInt(1).Mul(header.BaseFee, getBaseFeeMultiplier(header.BaseFee))
+	potentialMaxFee = big.NewInt(1).Div(potentialMaxFee, big.NewInt(10))
+
+	maxFeePerGas := big.NewInt(0)
+
+	if priorityFee.Cmp(potentialMaxFee) > 0 {
+		maxFeePerGas = big.NewInt(1).Add(potentialMaxFee, priorityFee)
+	} else {
+		maxFeePerGas = potentialMaxFee
+	}
+
+	fee := &EstimateFee{
+		BaseFee:              header.BaseFee,
+		MaxPriorityFeePerGas: priorityFee,
+		MaxFeePerGas:         maxFeePerGas,
+	}
+	return fee, nil
+}
+
+func (e *Eth) SuggestGasTipCap() (*big.Int, error) {
+	var hex hexutil.Big
+	if err := e.c.Call("eth_maxPriorityFeePerGas", &hex); err != nil {
+		return nil, err
+	}
+	return (*big.Int)(&hex), nil
+}
+
+type Utils struct{}
+
+func (u *Utils) ToGWei(val float64) *big.Int {
+	bigval := new(big.Float)
+	bigval.SetFloat64(val)
+	exp := new(big.Int).Exp(big.NewInt(10), big.NewInt(9), nil)
+
+	expF := new(big.Float)
+	expF.SetInt(exp)
+
+	bigval.Mul(bigval, expF)
+
+	result := new(big.Int)
+	bigval.Int(result) // store converted number in result
+
+	return result
+}
+
+func getBaseFeeMultiplier(baseFee *big.Int) *big.Int {
+	u := Utils{}
+	if baseFee.Cmp(u.ToGWei(40)) <= 0 {
+		return big.NewInt(20)
+	}
+	if baseFee.Cmp(u.ToGWei(100)) <= 0 {
+		return big.NewInt(16)
+	}
+	if baseFee.Cmp(u.ToGWei(200)) <= 0 {
+		return big.NewInt(14)
+	}
+	return big.NewInt(12)
 }
 
 // Accounts returns a list of addresses owned by client.
@@ -54,8 +129,8 @@ func (e *Eth) BlockNumber() (uint64, error) {
 }
 
 // GetBlockByNumber returns information about a block by block number.
-func (e *Eth) GetBlockByNumber(i ethgo.BlockNumber, full bool) (*ethgo.Block, error) {
-	var b *ethgo.Block
+func (e *Eth) GetBlockByNumber(i ethgo.BlockNumber, full bool) (*types.Header, error) {
+	var b *types.Header
 	if err := e.c.Call("eth_getBlockByNumber", &b, i.String(), full); err != nil {
 		return nil, err
 	}
@@ -63,8 +138,8 @@ func (e *Eth) GetBlockByNumber(i ethgo.BlockNumber, full bool) (*ethgo.Block, er
 }
 
 // GetBlockByHash returns information about a block by hash.
-func (e *Eth) GetBlockByHash(hash ethgo.Hash, full bool) (*ethgo.Block, error) {
-	var b *ethgo.Block
+func (e *Eth) GetBlockByHash(hash ethgo.Hash, full bool) (*types.Header, error) {
+	var b *types.Header
 	if err := e.c.Call("eth_getBlockByHash", &b, hash, full); err != nil {
 		return nil, err
 	}
